@@ -439,6 +439,12 @@ public:
         }
     }
     
+    int64_t trials(int ph = 0, int st = 0)const noexcept{
+        return trials_[ph][st];
+    }
+    int64_t unfoundTrials(int ph = 0, int st = 0)const noexcept{
+        return unfoundTrials_[ph][st];
+    }
     double calcMeanHitRate(int ph = 0, int st = 0)const noexcept{
         assert_stage(st); assert_phase(ph);
         return (trials_[ph][st] + unfoundTrials_[ph][st]) > 0 ?
