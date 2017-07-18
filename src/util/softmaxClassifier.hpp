@@ -638,6 +638,7 @@ public:
         if(e == 0.0 || pclassifier_ == nullptr){ return; }
         
         double *const param = pclassifier_->param_;
+        pclassifier_->lock();
         
         if(sparseUpdate){ // 勾配を使用した特徴1つずつで更新する場合
             if(feature_.size() <= 1){ return; }
@@ -692,6 +693,7 @@ public:
                 FASSERT(param[pi],);
             }
         }
+        pclassifier_->unlock();
         initLearning();
         
         ASSERT(pclassifier_->exam(),);
