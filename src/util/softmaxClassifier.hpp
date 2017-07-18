@@ -197,7 +197,7 @@ private:
     constexpr static int N_STAGES_ = classifier_t::N_STAGES_; // 第1分岐の数(パラメータを分ける)
     
     constexpr static double PARAM_SUM_VALUE_MAX = 256; // 大きい値になりすぎるのを防ぐ
-    constexpr static double VAR_ALPHA_MIN = 0.00001; // 分散が小さい要素に対応するパラメータの学習率が上がり過ぎないようにする
+    constexpr static double VAR_ALPHA_MIN = 0.0001; // 分散が小さい要素に対応するパラメータの学習率が上がり過ぎないようにする
     
     static void assert_index(int i)noexcept{ ASSERT(0 <= i && i < N_PARAMS_, cerr << i << endl;); }
     static void assert_phase(int i)noexcept{ ASSERT(0 <= i && i < N_PHASES_, cerr << i << endl;); }
@@ -228,25 +228,26 @@ public:
     // objective function
     int64_t trials_[N_PHASES_][N_STAGES_];
     int64_t unfoundTrials_[N_PHASES_][N_STAGES_];
-    double meanHitRateSum_[N_PHASES_][N_STAGES_];
-    double bestHitRateSum_[N_PHASES_][N_STAGES_];
-    double KLDivergenceSum_[N_PHASES_][N_STAGES_];
-    double entropySum_[N_PHASES_][N_STAGES_];
+    float meanHitRateSum_[N_PHASES_][N_STAGES_];
+    float bestHitRateSum_[N_PHASES_][N_STAGES_];
+    float KLDivergenceSum_[N_PHASES_][N_STAGES_];
+    float entropySum_[N_PHASES_][N_STAGES_];
     
     // about feature
-    double feature_size_[N_PHASES_][N_STAGES_];
-    double feature_sum_[N_PHASES_][N_STAGES_][N_PARAMS_];
-    double feature_sum2_[N_PHASES_][N_STAGES_][N_PARAMS_];
+    float feature_size_[N_PHASES_][N_STAGES_];
+    float feature_count_[N_PHASES_][N_STAGES_][N_PARAMS_];
+    float feature_sum_[N_PHASES_][N_STAGES_][N_PARAMS_];
+    float feature_sum2_[N_PHASES_][N_STAGES_][N_PARAMS_];
     //std::map<std::string, std::size_t> teacher_[N_PHASES_];
     
     // about record
     int64_t records_[N_PHASES_][N_STAGES_];
     int64_t unfoundRecords_[N_PHASES_][N_STAGES_];
-    double branchSum_[N_PHASES_][N_STAGES_];
-    double invBranchSum_[N_PHASES_][N_STAGES_];
+    float branchSum_[N_PHASES_][N_STAGES_];
+    float invBranchSum_[N_PHASES_][N_STAGES_];
     
     // L1, L2 standardation
-    double baseParam_[N_STAGES_ * N_PARAMS_];
+    float baseParam_[N_STAGES_ * N_PARAMS_];
     
     // learning param
     double E_;
@@ -301,6 +302,10 @@ public:
         assert_stage(st); assert_index(i);
         return baseParam_[st * params() + i];
     }
+    double frequency(int i, int ph = 0, int st = 0)const{
+        assert_stage(st); assert_phase(ph); assert_index(i); assert(feature_size_[ph][st] > 0);
+        return feature_count_[ph][st][i] / feature_size_[ph][st];
+    }
     double mean(int i, int ph = 0, int st = 0)const{
         assert_stage(st); assert_phase(ph); assert_index(i); assert(feature_size_[ph][st] > 0);
         return feature_sum_[ph][st][i] / feature_size_[ph][st];
@@ -317,6 +322,16 @@ public:
             sum_size += feature_size_[ph][st];
         }
         return sum_size;
+    }
+    double all_phase_freq(int i, int st = 0)const{
+        assert_stage(st); assert_index(i);
+        double sum_count = 0;
+        for(int ph = 0; ph < N_PHASES_; ++ph){
+            sum_count += feature_count_[ph][st][i];
+        }
+        double sum_size = all_phase_size(st);
+        assert(sum_size > 0);
+        return sum_count / sum_size;
     }
     double all_phase_mean(int i, int st = 0)const{
         assert_stage(st); assert_index(i);
@@ -381,6 +396,7 @@ public:
                 //feature_size_[ph] = 4;
                 feature_size_[ph][st] = 1;
                 for(int i = 0; i < N_PARAMS_; ++i){
+                    feature_count_[ph][st][i] = 0;
                     feature_sum_[ph][st][i] = 0;
                     feature_sum2_[ph][st][i] = feature_size_[ph][st];
                 }
@@ -400,6 +416,7 @@ public:
                 //teacher_[ph]; どしよ
                 feature_size_[ph][st] += alearner.feature_size_[ph][st];
                 for(int i = 0; i < N_PARAMS_; ++i){
+                    feature_count_[ph][st][i] += alearner.feature_count_[ph][st][i];
                     feature_sum_[ph][st][i] += alearner.feature_sum_[ph][st][i];
                     feature_sum2_[ph][st][i] += alearner.feature_sum2_[ph][st][i];
                 }
@@ -641,30 +658,47 @@ public:
         double *const param = pclassifier_->param_;
         if(sparseUpdate){ // 勾配を使用した特徴1つずつで更新する場合
             if(feature_.size() <= 1){ return; }
-            for(const auto& element : feature_[correctIndex_]){ // correct candidate
-                double dg = element.second / (var(element.first, ph, st) + VAR_ALPHA_MIN);
-                FASSERT(dg, cerr << "elm = " << element.first << " " << element.second
-                        << " / " << var(element.first, ph, st) << endl;);
-                param[element.first + st * params()] += e / T * dg ;
-            }
+            const double lam1 = L1_, lam2 = L2_;
             for (int m = 0, n = feature_.size(); m < n; ++m){ // all candidates
                 double possibility = (score_sum_ > 0) ? (score_[m] / score_sum_) : (1.0 / n);
                 FASSERT(possibility, cerr << score_[m] << " / " << score_sum_ << endl;);
                 
+                double correct = (m == correctIndex_) ? 1.0 : 0.0;
                 for(const auto& element : feature_[m]){
-                    double dg = -element.second / (var(element.first, ph, st) + VAR_ALPHA_MIN) * possibility;
+                    const int pi = element.first + st * params();
+                    double dg = (correct - possibility) * element.second / (var(element.first, ph, st) + VAR_ALPHA_MIN);
                     FASSERT(dg, cerr << "elm = " << element.first << " grd = " << dg
                             << " val = " << element.second << " p = " << possibility << " var = " << var(element.first, ph, st) << endl;);
                     
-                    param[element.first + st * params()] += e / T * dg;
-                    // 現在正則化なし
-                    FASSERT(param[element.first + st * params()],);
+                    param[pi] += e / T * dg;
+                    
+                    FASSERT(tmp,); FASSERT(baseParam_[pi],);
+                    
+                    // 正則化
+                    if(lam1 || lam2){
+                        const double weight = 1.0 / sqrt(frequency(element.first, ph, st));
+                        const double l1 = param[pi] > baseParam_[pi] ? (-weight) : weight; // L1
+                        const double l2 = -2 * weight * (param[pi] - baseParam_[pi]); // L2
+                        
+                        // 正則化項によるパラメータ更新は、baseを追い越すときはbaseにする(FOBOS)
+                        double nrm = l1 * lam1 + l2 * lam2;
+                        if((param[pi] - baseParam_[pi]) * (param[pi] + nrm - baseParam_[pi]) <= 0){
+                            param[pi] = baseParam_[pi];
+                        }else{
+                            param[pi] += nrm;
+                        }
+                    }
+                    
+                    // 絶対値が大きい場合は丸める
+                    double paramLimit = limit(element.first, st);
+                    param[pi] = max(-paramLimit, min(paramLimit, param[pi]));
+                    FASSERT(param[pi],);
                 }
             }
         }else{ // 勾配をパラメータ数分の配列にためておいて計算する場合
             pclassifier_->lock();
-            const double lam1 = L1_ * sqrt(batch_);
-            const double lam2 = L2_ * sqrt(batch_);
+            const double weight = sqrt(batch_);
+            const double lam1 = L1_ * weight, lam2 = L2_ * weight;
             
             for(int i = 0; i < N_PARAMS_; ++i){
                 int pi = i + st * params();
@@ -674,18 +708,19 @@ public:
                 
                 FASSERT(tmp,); FASSERT(baseParam_[pi],);
                 
-                const double l1 = tmp > baseParam_[pi] ? (-1) : (1); // L1
-                const double l2 = -2 * (tmp - baseParam_[pi]); // L2
-                
-                // 正則化項によるパラメータ更新は、baseを追い越すときはbaseにする(FOBOS)
-                double nrm = l1 * lam1 + l2 * lam2;
-                if((tmp - baseParam_[pi]) * (tmp + nrm - baseParam_[pi]) <= 0){
-                    param[pi] = baseParam_[pi];
-                }else{
-                    param[pi] += nrm;
+                if(lam1 || lam2){
+                    const double l1 = tmp > baseParam_[pi] ? (-1) : (1); // L1
+                    const double l2 = -2 * (tmp - baseParam_[pi]); // L2
+                    
+                    // 正則化項によるパラメータ更新は、baseを追い越すときはbaseにする(FOBOS)
+                    double nrm = l1 * lam1 + l2 * lam2;
+                    if((tmp - baseParam_[pi]) * (tmp + nrm - baseParam_[pi]) <= 0){
+                        param[pi] = baseParam_[pi];
+                    }else{
+                        param[pi] += nrm;
+                    }
+                    //if(nrm > 100){ cerr << nrm << endl; }
                 }
-                
-                //if(nrm > 100){ cerr << nrm << endl; }
                 
                 // 絶対値が大きい場合は丸める
                 double paramLimit = limit(i, st);
@@ -703,10 +738,11 @@ public:
     void feedFeatureValue(int ph = 0, int st = 0){
         if(feature_.size() <= 1){ return; }
         
-        const double weight = 1.0 / feature_.size();
+        const double weight = 1.0 / feature_.size(); // 候補クラスが少ないときほど重要
         
         for(int m = 0, n = feature_.size(); m < n; ++m){
             for(auto element : feature_[m]){
+                feature_count_[ph][st][element.first] += weight;
                 feature_sum_[ph][st][element.first] += element.second * weight;
                 feature_sum2_[ph][st][element.first] += element.second * element.second * weight;
             }
@@ -837,6 +873,7 @@ public:
             for(int st = 0; st < N_STAGES_; ++st){
                 feature_size_[ph][st] = af_size;
                 for(int i = 0; i < N_PARAMS_; ++i){
+                    feature_count_[ph][st][i] = 0;
                     feature_sum_[ph][st][i] = 0;
                     feature_sum2_[ph][st][i] = feature_size_[ph][st];
                 }
@@ -846,9 +883,10 @@ public:
         for(int ph = 0; ph < N_PHASES_; ++ph){
             for(int st = 0; ifs && st < N_STAGES_; ++st){
                 for(int i = 0; ifs && i < N_PARAMS_; ++i){
-                    double tmean, tvar;
-                    ifs >> tmean >> tvar;
+                    float tfreq, tmean, tvar;
+                    ifs >> tfreq >> tmean >> tvar;
                     
+                    feature_count_[ph][st][i] = tfreq * feature_size_[ph][st];
                     feature_sum_[ph][st][i] = tmean * feature_size_[ph][st];
                     if(tvar > 0){
                         feature_sum2_[ph][st][i] = (tvar + tmean * tmean) * feature_size_[ph][st];
@@ -867,7 +905,7 @@ public:
         for(int ph = 0; ph < N_PHASES_; ++ph){
             for(int st = 0; ofs && st < N_STAGES_; ++st){
                 for(int i = 0; ofs && i < N_PARAMS_; ++i){
-                    ofs << mean(i, ph, st) << " " << var(i, ph, st) << endl;
+                    ofs << frequency(i, ph, st) << " " << mean(i, ph, st) << " " << var(i, ph, st) << endl;
                 }
             }
         }
