@@ -360,7 +360,6 @@ public:
         L1_ = 0.0;
         L2_ = 0.0;
         batch_ = 1;
-        sparseUpdate = false;
     }
 
     void setLearnParam(double at, double ae, double al1, double al2, int ab)noexcept{
@@ -369,6 +368,9 @@ public:
         L1_ = al1;
         L2_ = al2;
         batch_ = ab;
+        if(batch_ == 1){
+            sparseUpdate = true;
+        }
     }
     
     void initFeatureValue()noexcept{
@@ -625,7 +627,6 @@ public:
     void updateParams(int ph = 0, int st = 0){
         
         ++tmpBatch_;
-        //cerr << "batch = " << tmpBatch_ << endl;
         if(tmpBatch_ >= batch_){
             tmpBatch_ = 0;
         }else{
@@ -638,8 +639,6 @@ public:
         if(e == 0.0 || pclassifier_ == nullptr){ return; }
         
         double *const param = pclassifier_->param_;
-        pclassifier_->lock();
-        
         if(sparseUpdate){ // 勾配を使用した特徴1つずつで更新する場合
             if(feature_.size() <= 1){ return; }
             for(const auto& element : feature_[correctIndex_]){ // correct candidate
@@ -663,6 +662,7 @@ public:
                 }
             }
         }else{ // 勾配をパラメータ数分の配列にためておいて計算する場合
+            pclassifier_->lock();
             const double lam1 = L1_ * sqrt(batch_);
             const double lam2 = L2_ * sqrt(batch_);
             
@@ -692,10 +692,9 @@ public:
                 param[pi] = max(-paramLimit, min(paramLimit, param[pi]));
                 FASSERT(param[pi],);
             }
+            pclassifier_->unlock();
+            initLearning();
         }
-        pclassifier_->unlock();
-        initLearning();
-        
         ASSERT(pclassifier_->exam(),);
     }
     void feedUnfoundFeatureValue(int ph = 0, int st = 0){
@@ -726,6 +725,7 @@ public:
     void feedSupervisedActionIndex(int idx, int ph = 0, int st = 0){ // in supervised learning mode
         if(feature_.size() <= 1){ return; }
         correctIndex_ = idx;
+        if(sparseUpdate)return;
         for(const auto& element : feature_[idx]){ // correct answer
             double dg = element.second / (var(element.first, ph, st) + VAR_ALPHA_MIN);
             
