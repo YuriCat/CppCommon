@@ -11,6 +11,7 @@
 #include <fstream>
 #include <cmath>
 #include <map>
+#include <mutex>
 
 #include "../defines.h"
 #include "random.hpp"
@@ -28,6 +29,7 @@ class SoftmaxClassifier{
 private:
     static void assert_index(int i)noexcept{ ASSERT(0 <= i && i < N_PARAMS_, cerr << i << endl;); }
     static void assert_stage(int st)noexcept{ ASSERT(0 <= st && st < N_STAGES_, cerr << st << endl;); }
+    mutable std::mutex mutex_;
     
 public:
     constexpr static int N_PARAMS_ = _N_PARAMS_; // パラメータの数
@@ -63,6 +65,10 @@ public:
     void feedFeatureScore(int c, int f, double v)const{}
     void feedCandidateScore(int c, double s)const{}
     void finishCalculatingScore()const{}
+    
+    // 学習用の排他制御
+    void lock()const{ mutex_.lock(); }
+    void unlock()const{ mutex_.unlock(); }
 
     std::string toString(int start, int end)const{
         std::ostringstream oss;
