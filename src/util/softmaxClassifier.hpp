@@ -228,13 +228,13 @@ public:
     // objective function
     int64_t trials_[N_PHASES_][N_STAGES_];
     int64_t unfoundTrials_[N_PHASES_][N_STAGES_];
-    float meanHitRateSum_[N_PHASES_][N_STAGES_];
-    float bestHitRateSum_[N_PHASES_][N_STAGES_];
-    float KLDivergenceSum_[N_PHASES_][N_STAGES_];
-    float entropySum_[N_PHASES_][N_STAGES_];
+    double meanHitRateSum_[N_PHASES_][N_STAGES_];
+    double bestHitRateSum_[N_PHASES_][N_STAGES_];
+    double KLDivergenceSum_[N_PHASES_][N_STAGES_];
+    double entropySum_[N_PHASES_][N_STAGES_];
     
     // about feature
-    float feature_size_[N_PHASES_][N_STAGES_];
+    double feature_size_[N_PHASES_][N_STAGES_];
     float feature_count_[N_PHASES_][N_STAGES_][N_PARAMS_];
     float feature_sum_[N_PHASES_][N_STAGES_][N_PARAMS_];
     float feature_sum2_[N_PHASES_][N_STAGES_][N_PARAMS_];
@@ -243,8 +243,8 @@ public:
     // about record
     int64_t records_[N_PHASES_][N_STAGES_];
     int64_t unfoundRecords_[N_PHASES_][N_STAGES_];
-    float branchSum_[N_PHASES_][N_STAGES_];
-    float invBranchSum_[N_PHASES_][N_STAGES_];
+    double branchSum_[N_PHASES_][N_STAGES_];
+    double invBranchSum_[N_PHASES_][N_STAGES_];
     
     // L1, L2 standardation
     float baseParam_[N_STAGES_ * N_PARAMS_];
@@ -659,7 +659,7 @@ public:
         if(sparseUpdate){ // 勾配を使用した特徴1つずつで更新する場合
             if(feature_.size() <= 1){ return; }
             const double lam1 = L1_, lam2 = L2_;
-            for (int m = 0, n = feature_.size(); m < n; ++m){ // all candidates
+            for(int m = 0, n = feature_.size(); m < n; ++m){ // all candidates
                 double possibility = (score_sum_ > 0) ? (score_[m] / score_sum_) : (1.0 / n);
                 FASSERT(possibility, cerr << score_[m] << " / " << score_sum_ << endl;);
                 
@@ -672,11 +672,11 @@ public:
                     
                     param[pi] += e / T * dg;
                     
-                    FASSERT(tmp,); FASSERT(baseParam_[pi],);
+                    FASSERT(param[pi],); FASSERT(baseParam_[pi],);
                     
                     // 正則化
-                    if(lam1 || lam2){
-                        const double weight = 1.0 / sqrt(frequency(element.first, ph, st));
+                    /*if(lam1 || lam2){
+                        const double weight = 1.0 / sqrt(frequency(element.first, ph, st)) / sqrt(feature_.size());
                         const double l1 = param[pi] > baseParam_[pi] ? (-weight) : weight; // L1
                         const double l2 = -2 * weight * (param[pi] - baseParam_[pi]); // L2
                         
@@ -687,7 +687,7 @@ public:
                         }else{
                             param[pi] += nrm;
                         }
-                    }
+                    }*/
                     
                     // 絶対値が大きい場合は丸める
                     double paramLimit = limit(element.first, st);
