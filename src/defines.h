@@ -266,6 +266,9 @@ constexpr int _YES = 1;
 constexpr int _NO = 0;
 constexpr int _BOTH = 2;
 
+#define TRI_BOOL_YES(tv, v) ((tv) == _YES || ((tv) != _NO && (v)))
+#define TRI_BOOL_NO(tv, v) ((tv) == _NO || ((tv) != _YES && (v)))
+
 // constexprのmin,max
 template<typename T>
 constexpr static T cmax(const T& a, const T& b){
