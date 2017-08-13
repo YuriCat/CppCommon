@@ -108,8 +108,11 @@ struct StaticClock{
 #ifdef USE_ANALYZER
     Clock cl;
     std::atomic<uint64_t> c_, t_;
+    std::string nm_; // 表示名
     StaticClock() : c_(0ULL), t_(0ULL){}
     StaticClock(uint64_t ac, uint64_t at) : c_(ac), t_(at){}
+    StaticClock(const std::string& nm) : c_(0ULL), t_(0ULL), nm_("CLOCK"){}
+    StaticClock(uint64_t ac, uint64_t at, const std::string& nm) : c_(ac), t_(at), nm_(nm){}
     ~StaticClock(){ report(); }
     void start()noexcept{ cl.start(); }
     void stop()noexcept{
@@ -118,7 +121,7 @@ struct StaticClock{
         t_ += tmp;
     }
     void report()const{
-        std::cerr << "CLOCK : " << t_ << " clock ( " << c_ << " times)";
+        std::cerr << nm_ << " : " << t_ << " clock ( " << c_ << " times)";
         if (c_ > 0){
             uint64_t avg = t_ / c_;
             std::cerr << " " << avg << " per trial.";
@@ -128,6 +131,8 @@ struct StaticClock{
 #else
     StaticClock(){}
     StaticClock(uint64_t ac, uint64_t at){}
+    StaticClock(const std::string& nm){}
+    StaticClock(uint64_t ac, uint64_t at, const std::string& nm){}
     ~StaticClock(){}
     void start()const noexcept{}
     void stop()const noexcept{}
