@@ -24,7 +24,7 @@ struct MomentQuadruple{
     int chosenIndex_; // which action was chosen?
 };
 
-template<int _N_PARAMS_, int _N_PHASES_ = 1, int _N_STAGES_ = 1>
+template<int _N_PARAMS_, int _N_PHASES_ = 1, int _N_STAGES_ = 1, typename _real_t = double>
 class SoftmaxClassifier{
 private:
     static void assert_index(int i)noexcept{ ASSERT(0 <= i && i < N_PARAMS_, cerr << i << endl;); }
@@ -32,21 +32,23 @@ private:
     mutable std::mutex mutex_;
     
 public:
+    using real_t = _real_t;
+    
     constexpr static int N_PARAMS_ = _N_PARAMS_; // パラメータの数
     constexpr static int N_PHASES_ = _N_PHASES_; // ドメインの数(複数のドメインに同じパラメータを使い回す場合)
     constexpr static int N_STAGES_ = _N_STAGES_; // 第1分岐の数(パラメータを分ける)
     
     double T_; // temperature
     
-    double param_[N_STAGES_ * N_PARAMS_];
+    real_t param_[N_STAGES_ * N_PARAMS_];
     
     constexpr static int params()noexcept{ return N_PARAMS_; }
     constexpr static int phases()noexcept{ return N_PHASES_; }
     constexpr static int stages()noexcept{ return N_STAGES_; }
     
-    double temperature()const noexcept{ return T_; }
+    real_t temperature()const noexcept{ return T_; }
     
-    double param(int i, int st = 0)const{
+    real_t param(int i, int st = 0)const{
         assert_index(i); assert_stage(st);
         return param_[st * params() + i];
     }
@@ -132,12 +134,12 @@ public:
         return 0;
     }
     
-    void setParam(const std::vector<double>& apv){
+    void setParam(const std::vector<real_t>& apv){
         for(int i = 0, n = apv.size(); i < n && i < N_STAGES_ * N_PARAMS_; ++i){
             param_[i] = apv[i];
         }
     }
-    void setParam(const double* ap){
+    void setParam(const real_t* ap){
         memmove(param_, ap, sizeof(param_));
     }
     template<class dice_t>
@@ -152,7 +154,7 @@ public:
         T_ = at;
     }
     
-    SoftmaxClassifier(const double* ap):
+    SoftmaxClassifier(const real_t* ap):
     T_(1.0)
     {
         for(int i = 0; i < N_STAGES_ * N_PARAMS_; ++i){
@@ -170,7 +172,7 @@ public:
     
     bool exam()const noexcept{
         // nan, inf
-        auto valid = [](double d)->bool{ return !std::isnan(d) && !std::isinf(d); };
+        auto valid = [](real_t d)->bool{ return !std::isnan(d) && !std::isinf(d); };
         if(!valid(T_)){
             return false;
         }
@@ -206,6 +208,8 @@ private:
     classifier_t *pclassifier_;
     
 public:
+    using real_t = typename classifier_t::real_t;
+    
     constexpr static int params()noexcept{ return N_PARAMS_; }
     constexpr static int phases()noexcept{ return N_PHASES_; }
     constexpr static int stages()noexcept{ return N_STAGES_; }
@@ -291,7 +295,7 @@ public:
         pclassifier_ = nullptr;
     }
     
-    double param(int i, int st = 0)const{
+    real_t param(int i, int st = 0)const{
         if(pclassifier_ != nullptr){
             return pclassifier_->param(i, st);
         }else{
@@ -655,7 +659,7 @@ public:
         
         if(e == 0.0 || pclassifier_ == nullptr){ return; }
         
-        double *const param = pclassifier_->param_;
+        real_t *const param = pclassifier_->param_;
         if(sparseUpdate){ // 勾配を使用した特徴1つずつで更新する場合
             if(feature_.size() <= 1){ return; }
             const double lam1 = L1_, lam2 = L2_;
@@ -691,7 +695,7 @@ public:
                     
                     // 絶対値が大きい場合は丸める
                     double paramLimit = limit(element.first, st);
-                    param[pi] = max(-paramLimit, min(paramLimit, param[pi]));
+                    param[pi] = max(-paramLimit, min(paramLimit, (double)param[pi]));
                     FASSERT(param[pi],);
                 }
             }
@@ -724,7 +728,7 @@ public:
                 
                 // 絶対値が大きい場合は丸める
                 double paramLimit = limit(i, st);
-                param[pi] = max(-paramLimit, min(paramLimit, param[pi]));
+                param[pi] = max(-paramLimit, min(paramLimit, (double)param[pi]));
                 FASSERT(param[pi],);
             }
             pclassifier_->unlock();
