@@ -183,7 +183,7 @@ struct MaxSelector{
     }
     template<class dice_t>
     int run_all(dice_t *const pdice){
-        return run_all(pdice);
+        return select(pdice);
     }
     double prob(size_t index)const{
         int bestCount = 0;
