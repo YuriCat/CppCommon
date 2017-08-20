@@ -77,6 +77,7 @@ sfmt_init_gen_rand(&sfmt,s);
 #include "util/lineZone.hpp"
 #include "util/accessor.hpp"
 #include "util/comparableBitSet.hpp"
+#include "util/index.hpp"
 
 // atomic性のあるクラス
 #include "util/atomic.hpp"
