@@ -17,10 +17,10 @@ struct TensorIndex{
         fill(args...);
     }
     
-    constexpr void fill_sub(int d){
+    void fill_sub(int d){
         size_[d] = 1;
     }
-    constexpr void fill_sub(int d, int n){
+    void fill_sub(int d, int n){
         fill_sub(d + 1);
         size_[d] = n;
     }
