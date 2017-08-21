@@ -9,7 +9,7 @@
 // インデックス付け
 template<int D>
 struct TensorIndex{
-    std::array<int, D> size_;
+    std::array<int, D + 1> size_;
     
     template<typename ... args_t>
     TensorIndex(args_t ... args)
@@ -17,7 +17,11 @@ struct TensorIndex{
         fill(args...);
     }
     
+    constexpr void fill_sub(int d){
+        size_[d] = 1;
+    }
     constexpr void fill_sub(int d, int n){
+        fill_sub(d + 1);
         size_[d] = n;
     }
     template<typename ... args_t>
@@ -30,6 +34,9 @@ struct TensorIndex{
         fill_sub(0, args...);
     }
     
+    constexpr int get_sub(int d){
+        return 0;
+    }
     constexpr int get_sub(int d, int i){
         return i;
     }
