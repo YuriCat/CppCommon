@@ -35,7 +35,7 @@ directories  ?= $(output_dir)
 # 4. Public Targets
 #
 default release debug profile:
-	$(MAKE) TARGET=$@ preparation long_bits_test random_test bit_array_test bit_operation_test bit_partition_test search_test solver_test string_test selection_test
+	$(MAKE) TARGET=$@ preparation index_test long_bits_test random_test bit_array_test bit_operation_test bit_partition_test search_test solver_test string_test selection_test
 
 run-coverage: coverage
 	out/coverage --gtest_output=xml
@@ -78,5 +78,8 @@ random_test :
 
 long_bits_test :
 	$(CXX) $(CXXFLAGS) -o $(output_dir)long_bits_test $(sources_dir)long_bits_test.cc $(LIBRARIES)
+
+index_test :
+	$(CXX) $(CXXFLAGS) -o $(output_dir)index_test $(sources_dir)index_test.cc $(LIBRARIES)
 
 -include $(dependencies)

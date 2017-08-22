@@ -6,6 +6,8 @@
 #ifndef UTIL_INDEX_HPP_
 #define UTIL_INDEX_HPP_
 
+#include <array>
+
 // インデックス付け
 template<int D>
 struct TensorIndex{
@@ -48,6 +50,44 @@ struct TensorIndex{
     int get(args_t ... args){
         return get_sub(1, args...);
     }
+};
+
+// 配列インスタンスを持たないバージョン
+template<int L, int ... shape_t>
+struct TensorIndexTypeSub{
+    template<typename ... args_t>
+    static constexpr int get(int i, args_t ... args){
+        return i * size() + TensorIndexTypeSub<shape_t...>::get(args...);
+    }
+    static constexpr int size(){
+        return L * TensorIndexTypeSub<shape_t...>::size();
+    }
+};
+
+template<int L>
+struct TensorIndexTypeSub<L>{
+    template<typename ... args_t>
+    static constexpr int get(int i, int j){
+        return i * size() + j;
+    }
+    static constexpr int size(){ return L; }
+};
+
+template<int L, int ... shape_t>
+struct TensorIndexType{
+    template<typename ... args_t>
+    static constexpr int get(args_t ... args){
+        return TensorIndexTypeSub<shape_t...>::get(args...);
+    }
+    static constexpr int size(){
+        return L * TensorIndexType<shape_t...>::size();
+    }
+};
+
+template<int L>
+struct TensorIndexType<L>{
+    static constexpr int get(int i){ return i; }
+    static constexpr int size(){ return L; }
 };
 
 #endif // UTIL_INDEX_HPP_
