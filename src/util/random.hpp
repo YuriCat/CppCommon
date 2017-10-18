@@ -886,7 +886,7 @@ struct ChiSquaredDistribution{
     constexpr float_t mod()const noexcept{ return (k <= 2) ? 0 : (k - 2); }
     
     constexpr float_t skew()const noexcept{ return 2 * sqrt(2) / sqrt(k); }
-    constexpr float_t kur()const noexcept{ 12 / k; }
+    constexpr float_t kur()const noexcept{ return 12 / k; }
     
     std::string toString()const{
         std::ostringstream oss;
@@ -941,7 +941,7 @@ struct TDistribution{
     constexpr float_t mod()const noexcept{ return 0; }
     
     constexpr float_t skew()const noexcept{ return 0; } // for nu > 3
-    constexpr float_t kur()const noexcept{ 6 / (nu - 4); } // for nu > 4
+    constexpr float_t kur()const noexcept{ return 6 / (nu - 4); } // for nu > 4
     
     std::string toString()const{
         std::ostringstream oss;
