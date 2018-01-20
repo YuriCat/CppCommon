@@ -77,7 +77,7 @@ static std::vector<std::string> splitByString(const std::string& s,
     std::string::size_type q;
     while((q = s.find(separator, p)) != std::string::npos){
         result.emplace_back(s, p, q - p);
-        p = q + 1;
+        p = q + separator.size();
     }
     
     result.emplace_back(s, p);

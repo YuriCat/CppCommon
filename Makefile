@@ -3,7 +3,7 @@
 #
 CXX       = g++
 CXXFLAGS  = -std=c++14 -Wall -Wextra -Wcast-qual -Wno-unused-function -Wno-sign-compare -Wno-unused-value -Wno-unused-label -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-parameter -fno-exceptions -fno-rtti \
-            -pedantic -Wno-long-long -msse4.2 -mbmi -mbmi2 -mavx2 -D__STDC_CONSTANT_MACROS -fopenmp
+            -pedantic -Wno-long-long -msse4.2 -mbmi -mbmi2 -mavx2 -D__STDC_CONSTANT_MACROS
 INCLUDES  =
 LIBRARIES = -lpthread -DHAVE_AVX2
 
