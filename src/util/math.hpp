@@ -167,7 +167,7 @@ static double log_multivariate_beta(const std::array<double, N>& x, double sum){
 
 /**************************高次元座標の一列化**************************/
 
-unsigned int cartesian(unsigned int x, unsigned int y){
+inline unsigned int cartesian(unsigned int x, unsigned int y){
     unsigned int sum = x + y;
     unsigned int base = sum * (sum + 1) / 2;
     //return (sum & 1) ? (base + x) : (base + sum - x);

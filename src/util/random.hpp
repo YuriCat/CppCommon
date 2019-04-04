@@ -85,7 +85,7 @@ struct ExponentialDistribution{
     lambda(l){}
 };
 
-std::ostream& operator<<(std::ostream& out, const ExponentialDistribution& e){
+static std::ostream& operator<<(std::ostream& out, const ExponentialDistribution& e){
     out << e.toString();
     return out;
 }
@@ -176,7 +176,7 @@ struct GammaDistribution{
     k(ak), theta(atheta){}
 };
 
-std::ostream& operator<<(std::ostream& out, const GammaDistribution& g){
+static std::ostream& operator<<(std::ostream& out, const GammaDistribution& g){
     out << g.toString();
     return out;
 }
@@ -228,7 +228,7 @@ struct InverseGammaDistribution{
     k(ak){}
 };
 
-std::ostream& operator<<(std::ostream& out, const InverseGammaDistribution& ig){
+static std::ostream& operator<<(std::ostream& out, const InverseGammaDistribution& ig){
     out << ig.toString();
     return out;
 }
@@ -371,20 +371,20 @@ struct BetaDistribution{
     a(aa), b(ab){}
 };
 
-BetaDistribution operator+(const BetaDistribution& lhs, const BetaDistribution& rhs)noexcept{
+inline BetaDistribution operator+(const BetaDistribution& lhs, const BetaDistribution& rhs)noexcept{
     return BetaDistribution(lhs.a + rhs.a, lhs.b + rhs.b);
 }
-BetaDistribution operator-(const BetaDistribution& lhs, const BetaDistribution& rhs)noexcept{
+inline BetaDistribution operator-(const BetaDistribution& lhs, const BetaDistribution& rhs)noexcept{
     return BetaDistribution(lhs.a - rhs.a, lhs.b - rhs.b);
 }
-BetaDistribution operator*(const BetaDistribution& lhs, const double m)noexcept{
+inline BetaDistribution operator*(const BetaDistribution& lhs, const double m)noexcept{
     return BetaDistribution(lhs.a * m, lhs.b * m);
 }
-BetaDistribution operator*(const double m, const BetaDistribution& rhs)noexcept{
+inline BetaDistribution operator*(const double m, const BetaDistribution& rhs)noexcept{
     return BetaDistribution(rhs.a * m, rhs.b * m);
 }
 
-std::ostream& operator<<(std::ostream& out, const BetaDistribution& b){
+static std::ostream& operator<<(std::ostream& out, const BetaDistribution& b){
     out << b.toString();
     return out;
 }
@@ -615,7 +615,7 @@ struct DirichletDistribution{
 };
 
 template<std::size_t N>
-std::ostream& operator<<(std::ostream& out, const DirichletDistribution<N>& d){
+static std::ostream& operator<<(std::ostream& out, const DirichletDistribution<N>& d){
     out << d.toString();
     return out;
 }
@@ -692,7 +692,7 @@ struct NormalDistribution{
 };
 
 template<class float_t>
-std::ostream& operator<<(std::ostream& out, const NormalDistribution<float_t>& n){
+static std::ostream& operator<<(std::ostream& out, const NormalDistribution<float_t>& n){
     out << n.toString();
     return out;
 }
@@ -770,7 +770,7 @@ struct LogNormalDistribution{
 };
 
 template<class float_t>
-std::ostream& operator<<(std::ostream& out, const LogNormalDistribution<float_t>& n){
+static std::ostream& operator<<(std::ostream& out, const LogNormalDistribution<float_t>& n){
     out << n.toString();
     return out;
 }
@@ -848,7 +848,7 @@ struct WeibullDistribution{
 };
 
 template<class float_t>
-std::ostream& operator<<(std::ostream& out, const WeibullDistribution<float_t>& w){
+static std::ostream& operator<<(std::ostream& out, const WeibullDistribution<float_t>& w){
     out << w.toString();
     return out;
 }
@@ -904,7 +904,7 @@ struct ChiSquaredDistribution{
 };
 
 template<class float_t>
-std::ostream& operator<<(std::ostream& out, const ChiSquaredDistribution<float_t>& cs){
+static std::ostream& operator<<(std::ostream& out, const ChiSquaredDistribution<float_t>& cs){
     out << cs.toString();
     return out;
 }
@@ -959,7 +959,7 @@ struct TDistribution{
 };
 
 template<class float_t>
-std::ostream& operator<<(std::ostream& out, const TDistribution<float_t>& t){
+static std::ostream& operator<<(std::ostream& out, const TDistribution<float_t>& t){
     out << t.toString();
     return out;
 }

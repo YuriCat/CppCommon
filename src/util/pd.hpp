@@ -8,7 +8,7 @@
 
 // 確率分布の扱い
 template<std::size_t I>
-void normalize(double pd[I]){
+static void normalize(double pd[I]){
     double sum = 0;
     for(int i = 0; i < I; ++i){
         sum += pd[i];
@@ -20,7 +20,7 @@ void normalize(double pd[I]){
     }
 }
 template<std::size_t I, std::size_t J>
-void normalize(double pd[I][J], int j){
+static void normalize(double pd[I][J], int j){
     double sum = 0;
     for(int i = 0; i < I; ++i){
         sum += pd[i][j];
@@ -33,7 +33,7 @@ void normalize(double pd[I][J], int j){
 }
 
 template<std::size_t I, std::size_t J>
-void normalize2(double pd[I][J], int R){
+static void normalize2(double pd[I][J], int R){
     for(int r = 0; r < R; ++r){
         // j方向で正規化
         for(int i = 0; i < I; ++i){
@@ -71,7 +71,7 @@ void normalize2(double pd[I][J], int R){
 }
 
 template<std::size_t I, std::size_t J>
-void normalize2(std::array<std::array<double, J>, I>& pd, int R){
+static void normalize2(std::array<std::array<double, J>, I>& pd, int R){
     for(int r = 0; r < R; ++r){
         // j方向で正規化
         for(int i = 0; i < I; ++i){
@@ -109,7 +109,7 @@ void normalize2(std::array<std::array<double, J>, I>& pd, int R){
 }
 
 template<std::size_t I, std::size_t J, class is_t, class js_t>
-void normalize2(double pd[I][J], int R, const is_t& isum, const js_t& jsum){
+static void normalize2(double pd[I][J], int R, const is_t& isum, const js_t& jsum){
     for(int r = 0; r < R; ++r){
         // j方向で正規化
         for(int i = 0; i < I; ++i){
@@ -146,7 +146,7 @@ void normalize2(double pd[I][J], int R, const is_t& isum, const js_t& jsum){
     }
 }
 
-double kullbackLeiblerDivergence(const double a[], const double b[], const int n){
+static double kullbackLeiblerDivergence(const double a[], const double b[], const int n){
     double kld = 0;
     for(int i = 0; i < n; ++i){
         kld += b[i] * log(b[i] / a[i]);
@@ -154,7 +154,7 @@ double kullbackLeiblerDivergence(const double a[], const double b[], const int n
     return kld;
 }
 
-double concordanceRate(const double a[], const double b[], const int n){
+static double concordanceRate(const double a[], const double b[], const int n){
     double cr = 0;
     for(int i = 0; i < n; ++i){
         cr += a[i] * b[i];
@@ -162,7 +162,7 @@ double concordanceRate(const double a[], const double b[], const int n){
     return cr;
 }
 
-double absoluteError(const double a[], const double b[], const int n){
+static double absoluteError(const double a[], const double b[], const int n){
     double ae = 0;
     for(int i = 0; i < n; ++i){
         ae += fabs(a[i] - b[i]);
@@ -170,11 +170,11 @@ double absoluteError(const double a[], const double b[], const int n){
     return ae;
 }
 
-double meanAbsoluteError(const double a[], const double b[], const int n){
+static double meanAbsoluteError(const double a[], const double b[], const int n){
     return absoluteError(a, b, n) / n;
 }
 
-double weightedMeanAbsoluteError(const double a[], const double b[], const int n){
+static double weightedMeanAbsoluteError(const double a[], const double b[], const int n){
     double ae = 0;
     for(int i = 0; i < n; ++i){
         ae += a[i] * fabs(a[i] - b[i]);

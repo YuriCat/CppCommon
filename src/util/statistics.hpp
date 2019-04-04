@@ -11,7 +11,7 @@
 // 統計関係演算
 
 template<class array_like>
-double mean(const array_like& ar){
+inline double mean(const array_like& ar){
     double sum = 0;
     for(const auto& v : ar){
         sum += v;
@@ -20,7 +20,7 @@ double mean(const array_like& ar){
 }
 
 template<class array_like>
-double var(const array_like& ar){
+inline double var(const array_like& ar){
     double sum2 = 0;
     for(const auto& v : ar){
         sum2 += v * v;
@@ -29,7 +29,7 @@ double var(const array_like& ar){
 }
 
 template<class array_like>
-double stddev(const array_like& ar){
+inline double stddev(const array_like& ar){
     return sqrt(var(ar));
 }
 
