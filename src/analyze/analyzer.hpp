@@ -64,12 +64,12 @@ struct Counter{
 };
 
 #ifdef USE_ANALYZER
-std::ostream& operator<<(std::ostream& ost, const Counter& c){
+static std::ostream& operator<<(std::ostream& ost, const Counter& c){
     ost << c.c_;
     return ost;
 }
 #else
-std::ostream& operator<<(std::ostream& ost, const Counter& c){
+static std::ostream& operator<<(std::ostream& ost, const Counter& c){
     ost << "none";
     return ost;
 }

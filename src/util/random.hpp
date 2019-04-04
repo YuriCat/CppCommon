@@ -235,8 +235,8 @@ static std::ostream& operator<<(std::ostream& out, const InverseGammaDistributio
 
 /**************************ガンマ分布, 逆ガンマ分布の中央値**************************/
 
-double GammaDistribution::med()const{ return InverseGammaDistribution(k).dens(1 / 2.0); }
-double InverseGammaDistribution::med()const{ return GammaDistribution(k).dens(1 / 2.0); }
+inline double GammaDistribution::med()const{ return InverseGammaDistribution(k).dens(1 / 2.0); }
+inline double InverseGammaDistribution::med()const{ return GammaDistribution(k).dens(1 / 2.0); }
 
 /**************************ベータ分布**************************/
 

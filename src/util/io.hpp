@@ -18,7 +18,7 @@
 
 // 出力簡略化
 template<class T, std::size_t N>
-std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arg){
+static std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arg){
     os << "{";
     for(int i = 0; i < (int)N - 1; ++i){
         os << arg[i] << ", ";
@@ -31,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, N>& arg){
 }
 
 template<class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& arg){
+static std::ostream& operator<<(std::ostream& os, const std::vector<T>& arg){
     os << "{";
     for(int i = 0; i < (int)arg.size() - 1; ++i){
         os << arg[i] << ", ";
@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& arg){
 }
 
 template<class T>
-std::ostream& operator<<(std::ostream& os, const std::valarray<T>& arg){
+static std::ostream& operator<<(std::ostream& os, const std::valarray<T>& arg){
     os << "{";
     for(int i = 0; i < (int)arg.size() - 1; ++i){
         os << arg[i] << ", ";
@@ -57,7 +57,7 @@ std::ostream& operator<<(std::ostream& os, const std::valarray<T>& arg){
 }
 
 template<class T, std::size_t N>
-std::string toString(const std::array<T, N>& arg, const std::string& format = ""){
+static std::string toString(const std::array<T, N>& arg, const std::string& format = ""){
     std::ostringstream os;
     if(format.size() < 1){
         os << "{";
@@ -86,7 +86,7 @@ std::string toString(const std::array<T, N>& arg, const std::string& format = ""
 }
 
 template<class T>
-std::string toString(const T arg[], const std::size_t n, const std::string& format = ""){
+static std::string toString(const T arg[], const std::size_t n, const std::string& format = ""){
     std::ostringstream os;
     if(format.size() < 1){
         os << "{";
@@ -115,7 +115,7 @@ std::string toString(const T arg[], const std::size_t n, const std::string& form
 }
 
 template<class T>
-std::string toString(const std::vector<T>& arg, const std::string& format = ""){
+static std::string toString(const std::vector<T>& arg, const std::string& format = ""){
     std::ostringstream os;
     if(format.size() < 1){
         os << "{";
@@ -144,7 +144,7 @@ std::string toString(const std::vector<T>& arg, const std::string& format = ""){
 }
 
 template<class T>
-std::string toString(const std::valarray<T>& arg, const std::string& format = ""){
+static std::string toString(const std::valarray<T>& arg, const std::string& format = ""){
     std::ostringstream os;
     if(format.size() < 1){
         os << "{";
@@ -173,7 +173,7 @@ std::string toString(const std::valarray<T>& arg, const std::string& format = ""
 }
 
 // 入力
-std::vector<std::string> getFilePathVector(const std::string& ipath,
+static std::vector<std::string> getFilePathVector(const std::string& ipath,
                                            const std::string& condition = ""){
     // 指定されたディレクトリ内のファイルのパス一覧を作る
     std::vector<std::string> fileNames;
@@ -201,7 +201,7 @@ std::vector<std::string> getFilePathVector(const std::string& ipath,
     return fileNames;
 }
 
-std::vector<std::string> getFilePathVectorRecursively(const std::string& ipath,
+static std::vector<std::string> getFilePathVectorRecursively(const std::string& ipath,
                                                       const std::string& condition = ""){
     // 指定されたディレクトリ内のファイルのパス一覧を再帰的に作る
     std::vector<std::string> fileNames;
